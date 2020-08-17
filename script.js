@@ -48,47 +48,55 @@ function fetchCityImages(cityName) {
 
 ///////////////// DOM MANIPULATIONS /////////////////
 
+function showCityOnMap(city) {
+  const map = L.map('map');
+  const osmLayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+  });
+  map.addLayer(osmLayer);
+  L.geoJSON(city.contour, {style: {"color": "#060eff", "weight": 2, "opacity": 0.3}}).addTo(map);
+  map.setView([city.centre.coordinates[1], city.centre.coordinates[0]], 10);
+}
+
 function getAutocompleteListContainer() {
-    return document.getElementById('autocomplete-list');
 }
 
 function getCityDetailsContainer() {
-    return document.getElementById('city-details');
 }
 
 function getUserInput() {
-    return document.getElementById('user-input');
 }
 
 function getCityImgElement() {
-  return document.getElementById('city-img')
 }
 
 function removeChildren(container) {
-  container.querySelectorAll('*').forEach(child => child.remove());
 }
 
-function resetCityImage() {
-  getCityImgElement().src = ''
-}
-
-/**
- * Returns an html element that represent a list item in the autocomplete input
- * @param city : an object of this shape : {nom, codeDepartement}
- */
-function getListItemHtmlElement(city) {
-    const listItem = document.createElement('li');
-    listItem.appendChild(
-        document.createTextNode(city.nom + (city.codeDepartement ? (' - ' + city.codeDepartement) : ''))
-    );
-    listItem.setAttribute('data-citycode', city.code);
-    listItem.setAttribute('data-cityname', city.nom);
-    listItem.addEventListener('click', handleListItemSelection);
-    return listItem;
+function removeCityDetails() {
 }
 
 function clearAutoCompleteList() {
-    removeChildren(getAutocompleteListContainer());
+}
+
+function resetCityImage() {
+
+}
+
+function showSuggestions() {
+}
+
+function hideSuggestions() {
+}
+
+
+/**
+ * Returns an html element that represent a list item in the autocomplete input
+ * @param city : an object of this shape : {nom, code, codeDepartement}
+ */
+function getListItemHtmlElement(city) {
+  
 }
 
 /**
@@ -96,9 +104,7 @@ function clearAutoCompleteList() {
  * @param cities : an array of object with this shape : {nom, codeDepartement}
  */
 function recreateAutocompleteList(cities) {
-    clearAutoCompleteList();
-    const autoCompleteList = getAutocompleteListContainer();
-    cities.forEach(city => autoCompleteList.appendChild(getListItemHtmlElement(city)));
+  
 }
 
 /**
@@ -107,122 +113,26 @@ function recreateAutocompleteList(cities) {
  * {nom, departement: {nom}, code, population, superficie, contour, centre, codesPostaux }
  */
 function createCityDetailsElements(city) {
-    const container = getCityDetailsContainer();
+  // Code INSEE, Population, Superficie, Département, codesPostaux
 
-    if (city.centre && city.contour) {
-        const cityMapElement = document.createElement('div');
-        cityMapElement.setAttribute('id', 'map');
-        container.appendChild(cityMapElement);
-        showCityOnMap(city);
-    }
-
-    const table = document.createElement('table');
-    table.setAttribute('class', 'table')
-
-    const innerTableString = `
-      <tr>
-        <td>Code INSEE</td>
-        <td>${city.code || 'NC'}</td>
-      </tr>
-      <tr>
-        <td>Population</td>
-        <td>${city.population || 'NC'} habitants</td>
-      </tr>
-      <tr>
-        <td>Superficie</td>
-        <td>${city.surface || 'NC'} ha</td>
-      </tr>
-      <tr>
-        <td>Département</td>
-        <td>${(city.departement && city.departement.nom) || 'NC'}</td>
-      </tr>
-      <tr>
-        <td>Codes posteaux</td>
-        <td>${(city.codesPostaux && city.codesPostaux.length !== 0) ? city.codesPostaux.join(', ') : 'NC'}</td>
-      </tr>
-    `;
-    table.innerHTML = innerTableString;
-    container.appendChild(table);
-}
-
-function removeCityDetails() {
-    removeChildren(getCityDetailsContainer());
-}
-
-function showCityOnMap(city) {
-    const map = L.map('map');
-    const osmLayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
-    });
-    map.addLayer(osmLayer);
-    L.geoJSON(city.contour, {style: {"color": "#060eff", "weight": 2, "opacity": 0.3}}).addTo(map);
-    map.setView([city.centre.coordinates[1], city.centre.coordinates[0]], 10);
+  
 }
 
 ////////////////// EVENT HANDLERS ////////////////
 
 function handleUserInput() {
-    const inputValue = getUserInput().value;
-    if (isValidCityName(inputValue)) {
-        getCitiesByName(inputValue).then(recreateAutocompleteList);
-    } 
-    
-    if (inputValue === '') {
-        clearAutoCompleteList();
-        removeCityDetails();
-        resetCityImage();
-    }
+  
 }
 
-function showSuggestions() {
-  getAutocompleteListContainer().classList.remove('hidden')
-}
 
-function hideSuggestions() {
-  getAutocompleteListContainer().classList.add('hidden')
-}
 
-let imageRotationTimer = null
 function updateCityImage(cityName) {
-  if (imageRotationTimer) {
-    clearInterval(imageRotationTimer)
-    imageRotationTimer = null;
-  }
-
-  let images = []
-  function updateImageSource() {
-    const image = getRandomArrayElement(images)
-    if (image) {
-      getCityImgElement().src = image.webformatURL
-    }
-  }
-
-  fetchCityImages(cityName).then(res => {
-    images = res.hits
-    updateImageSource()
-  })
-
-  imageRotationTimer = setInterval(updateImageSource, 5000)
+  
 }
 
 function handleListItemSelection() {
-    const cityCode = this.dataset.citycode
-    const cityName = this.dataset.cityname
-    getUserInput().value = cityName;
-    removeCityDetails();
-    resetCityImage();
-    updateCityImage(cityName);
-    getCityByCode(cityCode).then(createCityDetailsElements);
+  
 }
 
 /////////////////// EVENT BINDINGS /////////////////
 
-// give suggestions when the user searches for a city by name or zip code
-getUserInput().addEventListener('input', handleUserInput);
-
-getUserInput().addEventListener('focus', () => {
-  getUserInput().select()
-  showSuggestions()
-});
-getUserInput().addEventListener('blur', () => setTimeout(hideSuggestions, 200));
